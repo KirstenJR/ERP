@@ -10,9 +10,16 @@ class CarController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+        $query = Car::with('user')->latest('fecha_inicio');
+
+        if($user->role!=='admin'){
+            $query->where('user_id',$user->id);
+        }
+        $cars=$query->paginate(10);
+        return view('cars.index',compact('cars'));
     }
 
     /**

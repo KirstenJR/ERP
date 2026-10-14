@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CarController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,5 +21,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/solo-admin', function(){
     return 'hola admin';
 })->middleware(['auth','role:admin']);
+
+Route::resource('cars',CarController::class)->except('show');
 
 require __DIR__.'/auth.php';
