@@ -1,92 +1,96 @@
 <?php
-
+ 
 namespace App\Http\Controllers;
-
+ 
+use App\Http\Requests\StoreCarRequest;
+use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
+use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Gate;
+ 
 class CarController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $user = $request->user();
+ 
         $query = Car::with('user')->latest('fecha_inicio');
-
-        if($user->role!=='admin'){
-            $query->where('user_id',$user->id);
+ 
+        // El operador solo ve sus coches; el admin ve todos.
+        if ($user->role !== 'admin') {
+            $query->where('user_id', $user->id);
         }
-        $cars=$query->paginate(10);
-        return view('cars.index',compact('cars'));
+ 
+        $cars = $query->paginate(10);
+ 
+        return view('cars.index', compact('cars'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
+ 
     public function create(Request $request)
     {
         $users = $this->usuariosParaSelector($request);
-
+ 
         return view('cars.create', compact('users'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+ 
+    public function store(StoreCarRequest $request)
     {
         $data = $request->validated();
-
-        if ($request->user()->role!=='admin'){
-            $data['user_id']=$request->user()->id;
-        }else{
-            $data['user_id']=$data['user_id'] ?? $request->user()->id;
+ 
+        if ($request->user()->role !== 'admin') {
+            $data['user_id'] = $request->user()->id;
+        } else {
+            $data['user_id'] = $data['user_id'] ?? $request->user()->id;
         }
-
+ 
         Car::create($data);
-
-        return redirect()->route('cars.index')->with('status','Coche registrado correctamente');
+ 
+        return redirect()->route('cars.index')->with('status', 'Coche registrado correctamente.');
     }
-
-    private function usuariosParaSelector(Request $request)
+ 
+    public function edit(Request $request, Car $car)
     {
-        if($request->user()->role !== 'admin'){
-            return collect();
+        Gate::authorize('update', $car);
+ 
+        $users = $this->usuariosParaSelector($request);
+ 
+        return view('cars.edit', compact('car', 'users'));
+    }
+ 
+    public function update(UpdateCarRequest $request, Car $car)
+    {
+        Gate::authorize('update', $car);
+ 
+        $data = $request->validated();
+ 
+        // Un operador no puede reasignar el coche a otro usuario.
+        if ($request->user()->role !== 'admin') {
+            unset($data['user_id']);
+        } elseif (empty($data['user_id'])) {
+            unset($data['user_id']);
         }
-        return User::orderBy('name')->get(['id','name']);
+ 
+        $car->update($data);
+ 
+        return redirect()->route('cars.index')->with('status', 'Coche actualizado correctamente.');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Car $car)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Car $car)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Car $car)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+ 
     public function destroy(Car $car)
     {
-        //
+        Gate::authorize('delete', $car);
+ 
+        $car->delete();
+ 
+        return redirect()->route('cars.index')->with('status', 'Coche eliminado correctamente.');
+    }
+ 
+    private function usuariosParaSelector(Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return collect();
+        }
+ 
+        return User::orderBy('name')->get(['id', 'name']);
     }
 }
