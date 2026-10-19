@@ -17,4 +17,10 @@ class Car extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected function casts(): array{
+        return[
+            'fecha_inicio' => 'date',
+        ];
+    }
 }

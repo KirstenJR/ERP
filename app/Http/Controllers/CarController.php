@@ -25,9 +25,11 @@ class CarController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $users = $this->usuariosParaSelector($request);
+
+        return view('cars.create', compact('users'));
     }
 
     /**
@@ -35,7 +37,25 @@ class CarController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validated();
+
+        if ($request->user()->role!=='admin'){
+            $data['user_id']=$request->user()->id;
+        }else{
+            $data['user_id']=$data['user_id'] ?? $request->user()->id;
+        }
+
+        Car::create($data);
+
+        return redirect()->route('cars.index')->with('status','Coche registrado correctamente');
+    }
+
+    private function usuariosParaSelector(Request $request)
+    {
+        if($request->user()->role !== 'admin'){
+            return collect();
+        }
+        return User::orderBy('name')->get(['id','name']);
     }
 
     /**
