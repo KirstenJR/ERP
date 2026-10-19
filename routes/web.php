@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\UserController;
 
 Route::redirect('/', '/dashboard');
 
@@ -21,5 +22,9 @@ Route::get('/solo-admin', function(){
 })->middleware(['auth','role:admin']);
 
 Route::resource('cars',CarController::class)->except('show');
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('users', UserController::class)->except('show');
+});
 
 require __DIR__.'/auth.php';

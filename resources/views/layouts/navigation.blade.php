@@ -18,7 +18,11 @@
                     <x-responsive-nav-link :href="route('cars.index')" :active="request()->routeIs('cars.*')">
                     Coches
                     </x-responsive-nav-link>
-
+                    @if (auth()->user()->role === 'admin')
+                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                     Usuarios
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -77,7 +81,11 @@
             <x-nav-link :href="route('cars.index')" :active="request()->routeIs('cars.*')">
             Coches
             </x-nav-link>
-
+            @if (auth()->user()->role === 'admin')
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                Usuarios
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
