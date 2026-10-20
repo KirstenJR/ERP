@@ -1,15 +1,17 @@
 <?php
-
+ 
 namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
+ 
+use App\Exports\CarsReportExport;
 use App\Models\Car;
 use App\Models\User;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+ 
 class ReportController extends Controller
 {
-    
-private function filtros(Request $request): array
+    private function filtros(Request $request): array
     {
         return $request->validate([
             'user_id' => ['nullable', 'exists:users,id'],
@@ -47,5 +49,31 @@ private function filtros(Request $request): array
  
         return view('reports.index', compact('cars', 'total', 'porOperador', 'users', 'filtros'));
     }
+ 
+    public function pdf(Request $request)
+    {
+        $filtros = $this->filtros($request);
+        $cars = $this->consulta($filtros)->get();
+ 
+        $operador = ! empty($filtros['user_id'])
+            ? User::find($filtros['user_id'])?->name
+            : null;
+ 
+        $pdf = Pdf::loadView('reports.pdf', [
+            'cars'     => $cars,
+            'filtros'  => $filtros,
+            'operador' => $operador,
+            'total'    => $cars->count(),
+        ]);
+ 
+        return $pdf->download('reporte-coches.pdf');
+    }
+ 
+    public function excel(Request $request)
+    {
+        $filtros = $this->filtros($request);
+        $cars = $this->consulta($filtros)->get();
+ 
+        return Excel::download(new CarsReportExport($cars), 'reporte-coches.xlsx');
+    }
 }
-

@@ -58,7 +58,18 @@
                     @endforelse
                 </div>
             </div>
- 
+            
+            <div class="flex gap-3">
+                <a href="{{ route('reports.pdf', request()->query()) }}"
+                class="rounded-md bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-red-500">
+                    Descargar PDF
+                </a>
+                <a href="{{ route('reports.excel', request()->query()) }}"
+                class="rounded-md bg-green-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-green-500">
+                    Descargar Excel
+                </a>
+            </div>
+
             {{-- Detalle --}}
             <div class="overflow-x-auto bg-white shadow-sm sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
