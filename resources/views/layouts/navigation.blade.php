@@ -85,6 +85,10 @@
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                 Usuarios
             </x-responsive-nav-link>
+            <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                 Reportes
+            </x-nav-link>
+
             @endif
         </div>
 
@@ -109,6 +113,10 @@
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                        Reportes
+                    </x-responsive-nav-link>
+
                 </form>
             </div>
         </div>
