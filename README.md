@@ -1,146 +1,194 @@
-# ERP de inventario de coches
+# Sistema de Gestión y Control Vehicular
 
-Aplicación web interna, hecha con **Laravel**, para registrar y consultar el inventario de coches de una operación: qué operador tiene cada coche, con qué matrícula y desde qué fecha. Incluye inicio de sesión con dos roles (administrador y operador), gestión de usuarios, reportes con filtros exportables a PDF y Excel, un panel de indicadores y pruebas automáticas de permisos.
+Aplicación web desarrollada con **Laravel y MySQL** para administrar vehículos, usuarios y operaciones relacionadas con una flota vehicular.
 
-> Proyecto de portafolio. Los usuarios de demostración que aparecen abajo son solo para desarrollo.
+El proyecto busca centralizar la información, facilitar los procesos administrativos y ofrecer herramientas de consulta y generación de reportes mediante una interfaz web.
 
+**Estado:** En desarrollo y estabilización.
 
-## Qué puede hacer
+## Tecnologías utilizadas
 
-| Acción | Operador | Administrador |
-|---|---|---|
-| Iniciar sesión y editar su perfil | Sí | Sí |
-| Ver coches | Solo los suyos | Todos |
-| Registrar coches | A su nombre | A nombre de cualquier usuario |
-| Editar y eliminar coches | Solo los suyos | Todos |
-| Gestionar usuarios | No | Sí |
-| Reporte con filtros, PDF y Excel | No | Sí |
-| Dashboard | Solo sus cifras | Cifras globales y barras por operador |
+- **Backend:** PHP, Laravel
+- **Base de datos:** MySQL
+- **Frontend:** Blade, Tailwind CSS, JavaScript
+- **ORM:** Eloquent
+- **Control de versiones:** Git y GitHub
+- **Gestión de dependencias:** Composer y npm
 
-El registro público está desactivado: los usuarios los crea el administrador.
+## Funcionalidades
 
-## Tecnologías
+### Autenticación y usuarios
 
-- PHP 8.3 o superior y Laravel 13
-- MySQL
-- Laravel Breeze (Blade, Alpine.js, Tailwind CSS) y Vite
-- `barryvdh/laravel-dompdf` para PDF y `maatwebsite/excel` para Excel
-- Pruebas con el ejecutor de Laravel (`php artisan test`)
+- Inicio y cierre de sesión.
+- Administración de usuarios.
+- Roles de administrador y operador.
+- Control de acceso a funcionalidades según el rol.
 
-## Decisiones de seguridad
+### Gestión de vehículos
 
-- **Los permisos se aplican en el servidor.** Ocultar un botón en la vista no protege nada; cada acción se valida con middleware de rol, Policies y `Gate::authorize`.
-- **No se confía en lo que envía el cliente.** Un operador no puede registrar ni reasignar coches a otro usuario aunque edite el formulario; el rol se valida con `in:admin,operador`.
-- **Defensa en capas.** La matrícula es única tanto en la validación como en la base de datos, y las llaves foráneas impiden dejar coches huérfanos.
-- **Reglas de negocio:** un administrador no puede quitarse su rol ni eliminarse, y no se puede eliminar a un usuario que tenga coches.
-- **Puertas de Breeze cerradas:** se eliminó el registro público, la página de bienvenida y el borrado de cuenta desde el perfil, que habría saltado las reglas anteriores.
-- Las contraseñas se guardan con hash y las vistas escapan la salida de forma automática.
+- Registro de vehículos.
+- Consulta y edición de información.
+- Eliminación de registros según permisos.
+- Asociación de vehículos con usuarios.
+- Filtros y búsqueda de registros.
 
-## Instalación
+### Panel administrativo
 
-Requisitos: PHP 8.3+ (con las extensiones `mbstring`, `xml`, `curl`, `zip`, `mysql`, `gd`), Composer, MySQL y Node.js.
+- Dashboard con información general del sistema.
+- Indicadores de vehículos y operaciones.
+- Acceso a los módulos administrativos.
+
+### Reportes
+
+- Generación de reportes PDF.
+- Exportación de información a Excel.
+
+> Las funcionalidades descritas corresponden al alcance conocido del proyecto. Su funcionamiento y permisos deben verificarse durante la estabilización.
+
+## Funcionalidades planificadas
+
+Las siguientes mejoras forman parte de la evolución del proyecto:
+
+- Historial de asignaciones de vehículos.
+- Reasignación con cierre automático de la asignación anterior.
+- Restricción de una sola asignación activa por vehículo.
+- Pruebas automatizadas de operaciones y permisos.
+- Validación de integridad de datos y concurrencia.
+- Integración continua con GitHub Actions.
+- Mejoras de usabilidad, rendimiento y documentación.
+
+## Instalación local
+
+### Requisitos
+
+- PHP y extensiones compatibles con la versión de Laravel utilizada.
+- Composer.
+- MySQL.
+- Node.js y npm.
+- Git.
+
+### 1. Clonar el repositorio
 
 ```bash
-git clone <URL-DEL-REPOSITORIO> erp-coches
-cd erp-coches
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_PROYECTO>
+```
 
+### 2. Instalar dependencias
+
+```bash
 composer install
 npm install
+```
 
+### 3. Configurar el entorno
+
+```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-Crea la base de datos en MySQL y configura en `.env` los valores `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD`:
+Editar `.env` con las credenciales de una base de datos local:
 
-```sql
-CREATE DATABASE erp_coches CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gestion_vehicular
+DB_USERNAME=usuario_local
+DB_PASSWORD=contraseña_local
 ```
 
-Migra y carga los usuarios de demostración:
+### 4. Preparar la base de datos
+
+Crear previamente la base de datos configurada y ejecutar:
 
 ```bash
-php artisan migrate --seed
+php artisan migrate
 ```
 
-Inicia la aplicación en dos terminales:
+Para cargar datos de demostración, únicamente si el proyecto cuenta con seeders preparados:
+
+```bash
+php artisan db:seed
+```
+
+### 5. Iniciar la aplicación
+
+En una terminal:
 
 ```bash
 php artisan serve
+```
+
+En otra terminal:
+
+```bash
 npm run dev
 ```
 
-Abre <http://127.0.0.1:8000>.
+Abrir la dirección indicada por Laravel, normalmente:
 
-### Usuarios de demostración
+`http://127.0.0.1:8000`
 
-| Rol | Correo | Contraseña |
-|---|---|---|
-| Administrador | `admin@gmail.com` | `admin123` |
-| Operador | `operator@gmail.com` | `operator123` |
-
-Solo para desarrollo. En un servidor real crea el primer administrador con una contraseña fuerte y no ejecutes el seeder.
-
-### Datos de ejemplo (opcional)
-
-```bash
-php artisan db:seed --class=DemoSeeder
-```
-
-Crea tres operadores adicionales (contraseña `password`) y 20 coches.
+**Nota:** estos pasos son una guía inicial. Deben validarse en una instalación limpia antes de considerar reproducible el proyecto.
 
 ## Pruebas
 
-Las pruebas usan una base de datos aparte, porque vacían las tablas en cada ejecución.
-
-```sql
-CREATE DATABASE erp_coches_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON erp_coches_test.* TO 'TU_USUARIO'@'localhost';
-```
-
-`phpunit.xml` ya apunta a `erp_coches_test`. Para ejecutarlas:
+Ejecutar las pruebas disponibles mediante:
 
 ```bash
 php artisan test
 ```
 
-Cubren, entre otras cosas, que un operador no pueda ver, editar ni eliminar coches ajenos, que no pueda acceder a usuarios ni reportes, las reglas de gestión de usuarios, los filtros del reporte y las descargas de PDF y Excel.
+El proyecto se encuentra en proceso de ampliar su cobertura de pruebas, especialmente en gestión de vehículos, usuarios, autorización y reglas de asignación.
 
-## Estructura relevante
+## Estructura del proyecto
 
-```
+```text
 app/
-  Exports/CarsReportExport.php        Exportación a Excel
-  Http/Controllers/                   Car, User, Report y Dashboard
-  Http/Middleware/RoleMiddleware.php  Middleware de rol (alias "role")
-  Http/Requests/                      Validaciones de coches y usuarios
-  Models/                             Car y User
-  Policies/CarPolicy.php              Quién puede editar o eliminar un coche
-resources/views/                      cars, users, reports, dashboard
-routes/web.php
-tests/Feature/                        Pruebas de permisos, usuarios y reportes
+├── Http/
+│   ├── Controllers/
+│   └── Requests/
+├── Models/
+└── Policies/
+
+database/
+├── migrations/
+└── seeders/
+
+resources/
+└── views/
+
+routes/
+└── web.php
+
+tests/
+├── Feature/
+└── Unit/
 ```
 
-## Rutas principales
+## Próximas etapas
 
-| Ruta | Acceso |
+| Etapa | Objetivo |
 |---|---|
-| `/dashboard` | Cualquier usuario con sesión |
-| `/cars` (listado, alta, edición, baja) | Cualquier usuario con sesión; edición y baja según la Policy |
-| `/users` | Solo administrador |
-| `/reports`, `/reports/pdf`, `/reports/excel` | Solo administrador |
-
-## Despliegue
-
-En un servidor, el servidor web debe apuntar a la carpeta `public`, y el `.env` debe tener `APP_ENV=production` y `APP_DEBUG=false`. Pasos habituales:
-
-```bash
-composer install --no-dev --optimize-autoloader
-npm ci && npm run build
-php artisan migrate --force
-php artisan config:cache && php artisan route:cache && php artisan view:cache
-```
+| 1 | Estabilización y corrección de errores |
+| 2 | Revisión de autenticación y permisos |
+| 3 | Pruebas de gestión de vehículos y usuarios |
+| 4 | Implementación del historial de asignaciones |
+| 5 | Validación de reglas de negocio |
+| 6 | Mejoras de dashboard y reportes |
+| 7 | Automatización de pruebas y revisión de seguridad |
+| 8 | Documentación y publicación de la versión 1.0 |
 
 ## Autor
 
-**Kirsten J. Robles** 
+**Kirsten Jafet Robles Cervantes**  
+Ingeniero en Sistemas Computacionales  
+Desarrollador Backend Junior — PHP / Laravel / MySQL
+
+## Nota sobre el proyecto
+
+Proyecto independiente de portafolio, desarrollado con fines de aprendizaje y demostración de competencias técnicas.
+
+No contiene código propietario ni información confidencial de empleadores anteriores.
